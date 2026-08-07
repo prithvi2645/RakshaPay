@@ -46,7 +46,7 @@ See [docs/architecture.md](docs/architecture.md) for the full design.
 5,574 human-written SMS labeled ham/spam. That corpus is UK/2011 general SMS spam and
 contains no UPI traffic at all, so ~1,200 synthetic rows are added for India/UPI-specific
 patterns it lacks: KYC-expiry lures, UPI-PIN requests, remote-access (AnyDesk) scams, and
-legitimate UPI debit/credit notifications.
+legitimate UPI debit/credit alerts.
 
 Reported metrics are measured on **held-out real messages only**. Scoring against
 synthetic rows generated from the same templates the model trained on would measure
