@@ -66,7 +66,7 @@ PhonePe / GPay / BHIM / Paytm
 
 ## This build's scope decisions
 
-(Decided 2026-08-06, see conversation for full rationale)
+
 
 - Platform: **Android only** (SMS/notification access is not available on iOS).
 - Backend: **Supabase** (Postgres + RLS + trigger), live, not localhost-only.
