@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RakshaPay — Live Community Scam Intelligence</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --card: #141b31;
+    --card2: #1a2240;
+    --line: #253157;
+    --text: #eaf0ff;
+    --muted: #8fa0c7;
+    --safe: #2fbf71;
+    --caution: #f0a92e;
+    --danger: #ef4b5c;
+    --accent: #5b8cff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px;
+    background: radial-gradient(1200px 600px at 20% -10%, #16204a 0%, var(--bg) 60%);
+    color: var(--text);
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; flex-wrap: wrap; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: -0.02em; }
+  .badge {
+    font-size: 12px; padding: 4px 10px; border-radius: 999px;
+    background: rgba(91,140,255,.15); color: var(--accent);
+    border: 1px solid rgba(91,140,255,.35);
+  }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 13.5px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); display: inline-block; }
+  .dot.live { background: var(--safe); box-shadow: 0 0 0 0 rgba(47,191,113,.7); animation: pulse 2s infinite; }
+  .dot.err { background: var(--danger); }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(47,191,113,.6); }
+    70%  { box-shadow: 0 0 0 9px rgba(47,191,113,0); }
+    100% { box-shadow: 0 0 0 0 rgba(47,191,113,0); }
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 14px; margin-bottom: 26px; }
+  .tile {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 18px 18px 16px;
+  }
+  .tile .label { color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .08em; }
+  .tile .value { font-size: 38px; font-weight: 650; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .tile .value.bump { animation: bump .7s ease; }
+  @keyframes bump {
+    0%   { color: var(--text); transform: scale(1); }
+    25%  { color: var(--accent); transform: scale(1.12); }
+    100% { color: var(--text); transform: scale(1); }
+  }
+  .tile.danger .value { color: var(--danger); }
+  .tile.caution .value { color: var(--caution); }
+  .tile.safe .value { color: var(--safe); }
+
+  h2 { font-size: 16px; margin: 0 0 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; background: var(--card2); }
+  tr:last-child td { border-bottom: none; }
+  tr.new td { animation: flash 1.6s ease; }
+  @keyframes flash { 0% { background: rgba(91,140,255,.25); } 100% { background: transparent; } }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 13.5px; }
+  .pill { display:inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px;
+          background: rgba(239,75,92,.15); color: var(--danger); border: 1px solid rgba(239,75,92,.35); }
+  .empty { padding: 34px 16px; text-align: center; color: var(--muted); }
+  footer { margin-top: 22px; color: var(--muted); font-size: 12.5px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  button { background: var(--card2); color: var(--text); border: 1px solid var(--line);
+           border-radius: 9px; padding: 7px 13px; cursor: pointer; font-size: 13px; }
+  button:hover { border-color: var(--accent); }
+  .setup { max-width: 560px; margin: 60px auto; background: var(--card); border: 1px solid var(--line);
+           border-radius: 18px; padding: 26px; }
+  .setup input { width: 100%; margin: 8px 0 16px; padding: 11px 13px; border-radius: 10px;
+                 border: 1px solid var(--line); background: #0e1428; color: var(--text); font-size: 14px; }
+  .setup label { font-size: 13px; color: var(--muted); }
+  .hide { display: none; }
+</style>
+</head>
+<body>
+
+<div id="setup" class="setup hide">
+  <h1 style="font-size:20px;margin-bottom:6px">Connect to your project</h1>
+  <p class="sub" style="margin-bottom:18px">
+    Stored only in this browser's localStorage. Use the <strong>publishable</strong> key —
+    never a service_role/secret key.
+  </p>
+  <label>Project URL</label>
+  <input id="inUrl" placeholder="https://xxxxxxxx.supabase.co" autocomplete="off">
+  <label>Publishable key</label>
+  <input id="inKey" placeholder="sb_publishable_..." autocomplete="off">
+  <button id="save" style="width:100%;padding:12px;font-size:15px">Connect</button>
+  <p id="setupErr" style="color:var(--danger);font-size:13px;margin-top:12px"></p>
+</div>
+
+<div id="app" class="hide">
+  <header>
+    <h1>RakshaPay — Live</h1>
+    <span class="badge">Community Scam Intelligence</span>
+    <span id="dot" class="dot"></span>
+    <span id="status" style="font-size:13px;color:var(--muted)">connecting…</span>
+  </header>
+  <p class="sub">
+    Every number below is read live from Postgres. Report a scam in the app and watch it land.
+  </p>
+
+  <div class="grid">
+    <div class="tile"><div class="label">Payments scored</div><div class="value" id="payments_scored">–</div></div>
+    <div class="tile danger"><div class="label">High-risk flagged</div><div class="value" id="high_risk_blocked">–</div></div>
+    <div class="tile caution"><div class="label">Caution raised</div><div class="value" id="caution_raised">–</div></div>
+    <div class="tile safe"><div class="label">Scored safe</div><div class="value" id="scored_safe">–</div></div>
+    <div class="tile"><div class="label">Reports received</div><div class="value" id="total_reports">–</div></div>
+    <div class="tile"><div class="label">Reporting devices</div><div class="value" id="reporting_devices">–</div></div>
+    <div class="tile"><div class="label">Patterns tracked</div><div class="value" id="patterns_tracked">–</div></div>
+    <div class="tile danger"><div class="label">Active shared patterns</div><div class="value" id="patterns_active">–</div></div>
+  </div>
+
+  <h2>Active scam patterns — synced to every device</h2>
+  <div class="panel scroll">
+    <table>
+      <thead>
+        <tr><th>UPI ID</th><th>Distinct devices</th><th>Reported as</th><th>Last report</th></tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="4" class="empty">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <span id="updated">–</span>
+    <span>·</span>
+    <span>A pattern goes active only after <strong>3 distinct devices</strong> report it.</span>
+    <span>·</span>
+    <span><code>reports</code> and <code>risk_logs</code> are insert-only — not readable by any client, including this page.</span>
+    <button id="reset">Change project</button>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var LS = 'rakshapay.dashboard';
+  var cfg = null;
+  try { cfg = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { cfg = null; }
+
+  var setup = document.getElementById('setup');
+  var app = document.getElementById('app');
+
+  function show(which) {
+    setup.classList.toggle('hide', which !== 'setup');
+    app.classList.toggle('hide', which !== 'app');
+  }
+
+  document.getElementById('save').onclick = function () {
+    var url = document.getElementById('inUrl').value.trim().replace(/\/+$/, '');
+    var key = document.getElementById('inKey').value.trim();
+    if (!/^https:\/\/.+\.supabase\.co$/.test(url) || !key) {
+      document.getElementById('setupErr').textContent =
+        'Enter a URL like https://xxxx.supabase.co and your publishable key.';
+      return;
+    }
+    cfg = { url: url, key: key };
+    localStorage.setItem(LS, JSON.stringify(cfg));
+    show('app'); tick();
+  };
+
+  document.getElementById('reset').onclick = function () {
+    localStorage.removeItem(LS); location.reload();
+  };
+
+  if (!cfg) { show('setup'); return; }
+  show('app');
+
+  var prev = {};
+  var seen = {};
+  var first = true;
+
+  function api(path) {
+    return fetch(cfg.url + '/rest/v1/' + path, {
+      headers: { apikey: cfg.key, Authorization: 'Bearer ' + cfg.key }
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + ' ' + t.slice(0, 160)); });
+      return r.json();
+    });
+  }
+
+  function setNum(id, val) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var s = (val === null || val === undefined) ? '–' : String(val);
+    if (el.textContent !== s) {
+      el.textContent = s;
+      if (!first && prev[id] !== undefined && Number(val) > Number(prev[id])) {
+        el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+      }
+    }
+    prev[id] = val;
+  }
+
+  function state(kind, msg) {
+    document.getElementById('dot').className = 'dot ' + kind;
+    document.getElementById('status').textContent = msg;
+  }
+
+  function renderRows(rows) {
+    var tb = document.getElementById('rows');
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="4" class="empty">' +
+        'No active patterns yet — a UPI ID appears here once 3 different devices report it.</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(function (r) {
+      var isNew = !first && !seen[r.vpa];
+      seen[r.vpa] = true;
+      var when = r.last_reported_at ? new Date(r.last_reported_at).toLocaleTimeString() : '–';
+      var codes = (r.reason_codes || []).join(', ') || '—';
+      return '<tr class="' + (isNew ? 'new' : '') + '">' +
+        '<td><code>' + esc(r.vpa) + '</code></td>' +
+        '<td><span class="pill">' + r.report_count + '</span></td>' +
+        '<td>' + esc(codes) + '</td>' +
+        '<td>' + when + '</td></tr>';
+    }).join('');
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function tick() {
+    Promise.all([
+      api('live_stats?select=*'),
+      api('active_patterns?select=*')
+    ]).then(function (res) {
+      var s = (res[0] && res[0][0]) || {};
+      ['payments_scored','high_risk_blocked','caution_raised','scored_safe',
+       'total_reports','reporting_devices','patterns_tracked','patterns_active']
+        .forEach(function (k) { setNum(k, s[k]); });
+      renderRows(res[1] || []);
+      document.getElementById('updated').textContent =
+        'Updated ' + new Date().toLocaleTimeString();
+      state('live', 'live');
+      first = false;
+    }).catch(function (e) {
+      state('err', 'error — ' + e.message);
+    });
+  }
+
+  tick();
+  setInterval(tick, 3000);
+})();
+</script>
+</body>
+</html>
