@@ -1,0 +1,18 @@
+{
+  "input_shape": "[N, 1] string tensor, one raw SMS/notification string per row",
+  "output_names": [
+    "label",
+    "probabilities"
+  ],
+  "classes": [
+    0,
+    1
+  ],
+  "note": "output[1] gives per-class probabilities; scam is class label 1",
+  "training_data": {
+    "real_source": "UCI SMS Spam Collection (5,574 human-written SMS)",
+    "synthetic_rows": 1200,
+    "synthetic_purpose": "India/UPI-specific patterns absent from the UCI corpus",
+    "eval_note": "metrics measured on held-out REAL messages only"
+  }
+}
