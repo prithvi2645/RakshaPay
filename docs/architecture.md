@@ -48,7 +48,7 @@ PhonePe / GPay / BHIM / Paytm
 | Layer | Technology |
 |---|---|
 | Frontend | Flutter (Android) |
-| On-device inference | ONNX Runtime Mobile / TensorFlow Lite (quantized) |
+| On-device inference | ONNX Runtime Mobile  |
 | Risk Scoring Model | XGBoost or Random Forest over structural QR/VPA features, trained offline |
 | NLP Scam-Text Matcher | Keyword + pattern hybrid (TF-IDF/LogReg) — the deck's stated alternative to a full distilled transformer |
 | Text-to-Speech | On-device regional-language TTS (Android TTS engine) |
