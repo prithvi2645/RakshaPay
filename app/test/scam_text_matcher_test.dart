@@ -18,7 +18,7 @@ void main() {
     expect(matcher.isLoaded, isTrue);
   });
 
-  test('scores a legitimate UPI debit notification as low risk', () {
+  test('scores a legitimate UPI debit alert as low risk', () {
     final probability = matcher.scamProbability(
       'Rs.500 debited from a/c **1234 for UPI txn to City Cafe. Avl bal Rs.4200. -HDFC Bank',
     );

@@ -6,7 +6,7 @@ Download once with `python ml/src/download_datasets.py`.
 That corpus is UK/2011 general SMS spam. It teaches the model what real scam
 language looks like, but it contains no UPI content at all — no KYC-expiry
 lures, no UPI-PIN requests, no remote-access (AnyDesk) scams, and no legitimate
-UPI debit/credit notifications. Those India-specific classes are added
+UPI debit/credit alerts. Those India-specific classes are added
 synthetically so the model has any signal for them at all.
 
 Every row is tagged with `origin` (real|synthetic) so training can evaluate on a
@@ -43,7 +43,7 @@ UPI_SCAM_TEMPLATES = [
     "Army officer posted here, urgent purchase. Accept my UPI collect request for Rs.{amount} advance.",
 ]
 
-# Legitimate UPI notifications — the UCI corpus has no UPI traffic, so without
+# Legitimate UPI alerts — the UCI corpus has no UPI traffic, so without
 # these the model would treat any UPI-shaped message as suspicious.
 UPI_LEGIT_TEMPLATES = [
     "Rs.{amount} debited from a/c **{acct} for UPI txn to {name}. Avl bal Rs.{bal}. -{bank}",

@@ -1,5 +1,5 @@
 {
-  "input_shape": "[N, 1] string tensor, one raw SMS/notification string per row",
+  "input_shape": "[N, 1] string tensor, one raw SMS string per row",
   "output_names": [
     "label",
     "probabilities"

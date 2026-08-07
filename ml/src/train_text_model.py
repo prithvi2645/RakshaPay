@@ -76,7 +76,7 @@ def main(
     joblib.dump(pipeline, out.with_suffix(".joblib"))
 
     meta = {
-        "input_shape": "[N, 1] string tensor, one raw SMS/notification string per row",
+        "input_shape": "[N, 1] string tensor, one raw SMS string per row",
         "output_names": [o.name for o in onnx_model.graph.output],
         "classes": pipeline.named_steps["clf"].classes_.tolist(),
         "note": "output[1] gives per-class probabilities; scam is class label 1",
