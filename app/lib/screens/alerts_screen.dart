@@ -147,6 +147,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
     final sourceLabel = switch (record.source) {
       'sms' => 'Message',
       'manual' => 'Typed UPI ID',
+      'qr_image' => 'QR image',
       _ => 'QR scan',
     };
 
