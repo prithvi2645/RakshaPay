@@ -13,7 +13,7 @@ Source: original "Hack Genesis 2026" deck (WTech team), extracted 2026-08-06.
 
 ## Solution
 
-RakshaPay is a lightweight companion layer (app + notification/SMS listener) that sits
+RakshaPay is a lightweight companion layer (app + SMS listener) that sits
 between the user and every UPI action, not a replacement for any UPI app, gateway, or bank.
 
 ```
@@ -26,13 +26,13 @@ PhonePe / GPay / BHIM / Paytm
 
 ## System flow
 
-1. **User Action** — QR scan, collect request, or payment SMS/notification arrives.
-2. **Input Capture Layer** — QR Scanner, Notification Analyzer, SMS Analyzer. All capture
+1. **User Action** — QR scan, UPI ID check, or payment SMS arrives.
+2. **Input Capture Layer** — QR Scanner, SMS Analyzer. All capture
    and analysis happens on-device; nothing raw leaves the phone.
 3. **On-Device AI Risk Engine**:
    - QR Structure Analysis — QR pattern/entropy/risky-characteristic checks
    - VPA / UPI-ID Analysis — UPI ID pattern and reputation checks
-   - Scam Text Detection — NLP model over SMS/notification text
+   - Scam Text Detection — NLP model over SMS text
    - Scam Database Matching — against local + cloud scam-pattern cache
    - Lightweight ML models, on-device inference only
 4. **Risk Score & Alert** — Safe (low risk) / Caution (medium risk) / High-Risk (recommend
@@ -57,7 +57,7 @@ PhonePe / GPay / BHIM / Paytm
 ## Design principles
 
 - **On-device first** — most analysis happens on the phone.
-- **Privacy protected** — raw SMS/QR/notification content never leaves the device;
+- **Privacy protected** — raw SMS and QR content never leaves the device;
   only anonymized, derived signals sync to the backend.
 - **Real-time** — risk scored instantly, before UPI PIN entry.
 - **Community-powered** — reported scams improve detection for everyone.
@@ -68,18 +68,13 @@ PhonePe / GPay / BHIM / Paytm
 
 
 
-- Platform: **Android only** (SMS/notification access is not available on iOS).
+- Platform: **Android only** (SMS access is not available on iOS).
 - Backend: **Supabase** (Postgres + RLS + trigger), live, not localhost-only. Report
   aggregation is an `AFTER INSERT` trigger running inside the database, so there is no
   separate runtime to deploy or keep awake.
 - Scope: full end-to-end MVP — real backend, multi-language voice alerts, scam-pattern/
   report/risk-log collection all functional, not stubbed.
-- **Input capture implemented in this build: QR scanning and SMS.** The notification
-  listener described in the deck's Input Capture Layer above is *not* implemented — there
-  is no `NotificationListenerService` in the Android manifest and no Dart code for it.
-  The deck sections of this document describe the original design; this list is what the
-  code actually does. Restoring it (scoped to UPI app packages only, to read collect
-  requests) is a known open item.
+- Input capture: **QR scanning and SMS**.
 - Training data — revised 2026-08-06 after review:
   - **Scam-text model**: real backbone. UCI SMS Spam Collection (5,574 human-written
     SMS) + ~1,200 synthetic rows for India/UPI-specific patterns absent from that

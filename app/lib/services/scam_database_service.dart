@@ -10,7 +10,7 @@ import '../models/risk_result.dart';
 ///
 /// Patterns sync down from Supabase into a local cache so scoring keeps
 /// working offline (see the offline-first principle in docs/architecture.md).
-/// Only derived signals ever go up — never raw QR, SMS or notification content.
+/// Only derived signals ever go up — never raw QR or SMS content.
 class ScamDatabaseService {
   static const _cacheKey = 'cached_scam_vpas';
   static const _syncedAtKey = 'scam_patterns_synced_at';

@@ -43,7 +43,7 @@ class RiskEngine {
     return _applyCommunityOverride(result, features.vpa);
   }
 
-  /// Scores an SMS or notification body.
+  /// Scores an SMS body.
   ///
   /// The text model on its own over-flags Indian transactional SMS: it was
   /// trained on a UK corpus where "spam" means marketing, and bank alerts,

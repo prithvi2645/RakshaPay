@@ -218,7 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'RakshaPay never uploads your QR codes, messages or notifications. '
+                    'RakshaPay never uploads your QR codes or messages. '
                     'Only scam reports you choose to send, and an anonymous risk level, leave the device.\n\n'
                     'RakshaPay does not process payments and is not a bank or UPI app.',
                     style: AppTheme.body(12.5, color: AppColors.muted, height: 1.5),

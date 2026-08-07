@@ -44,8 +44,8 @@ create table if not exists public.reports (
   constraint reports_one_per_device unique (vpa, device_hash)
 );
 
--- Anonymised risk-scoring telemetry: score and level only, never raw SMS, QR
--- or notification content. Used to watch model behaviour in aggregate.
+-- Anonymised risk-scoring telemetry: score and level only, never raw SMS or QR
+-- content. Used to watch model behaviour in aggregate.
 --
 -- level/source are deliberately NOT constrained to a value list: the client
 -- swallows telemetry failures silently, so a stale CHECK would drop data with
