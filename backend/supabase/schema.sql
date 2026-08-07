@@ -1,10 +1,7 @@
 -- RakshaPay — Supabase (Postgres) backend.
 --
--- Replaces the Firebase setup (Firestore rules + the aggregateReport Cloud
--- Function). Cloud Functions require Firebase's paid Blaze plan, so the
--- aggregation never ran and scam_patterns stayed empty. Here the same logic is
--- an AFTER INSERT trigger that lives inside the database — no separate runtime,
--- nothing to deploy, nothing to keep awake, and free.
+-- Report aggregation is an AFTER INSERT trigger that lives inside the database,
+-- so there is no separate runtime to deploy or keep awake.
 --
 -- Run once: Supabase dashboard -> SQL Editor -> paste -> Run.
 -- Safe to re-run; every statement is idempotent.
@@ -16,10 +13,6 @@
 -- Community scam-pattern database. Every device syncs the active rows to build
 -- its local cache. Clients can only ever read this; all writes come from the
 -- trigger below.
---
--- Note: the Firestore version keyed this by a sha256 of the VPA purely because
--- Firestore needs a document ID. Postgres does not, and the hash was never
--- anonymisation (the VPA sat in plaintext beside it), so the VPA is the key.
 create table if not exists public.scam_patterns (
   vpa               text        primary key,
   reason_codes      text[]      not null default '{}',
@@ -36,9 +29,9 @@ create index if not exists scam_patterns_active_idx
 -- design) — a per-install random token stands in for identity.
 --
 -- The UNIQUE (vpa, device_hash) constraint is what makes the 3-report
--- threshold actually mean three DISTINCT devices. Under Firestore the count
--- was raw reports, so three taps from one phone could flag a real merchant.
--- Here the database physically refuses the second report from the same device.
+-- threshold mean three DISTINCT devices: the database physically refuses a
+-- second report of the same VPA from the same install, so three taps from one
+-- phone cannot flag a real merchant.
 create table if not exists public.reports (
   id          bigint      generated always as identity primary key,
   vpa         text        not null,
@@ -71,7 +64,7 @@ create index if not exists risk_logs_created_at_idx
   on public.risk_logs (created_at desc);
 
 -- ---------------------------------------------------------------------------
--- Aggregation trigger — the piece Firebase's free tier could not run
+-- Aggregation trigger
 -- ---------------------------------------------------------------------------
 
 -- SECURITY DEFINER so it can write scam_patterns, which no client role may
@@ -112,7 +105,7 @@ create trigger on_report_created
   for each row execute function public.aggregate_report();
 
 -- ---------------------------------------------------------------------------
--- Row Level Security — the equivalent of the old firestore.rules
+-- Row Level Security
 -- ---------------------------------------------------------------------------
 
 alter table public.scam_patterns enable row level security;
@@ -149,7 +142,7 @@ grant insert on public.reports       to anon, authenticated;
 grant insert on public.risk_logs     to anon, authenticated;
 
 -- ---------------------------------------------------------------------------
--- Analytics — the GROUP BY that Firestore could not do without BigQuery
+-- Analytics
 -- ---------------------------------------------------------------------------
 
 create or replace view public.risk_summary as

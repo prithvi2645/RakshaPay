@@ -2,11 +2,11 @@
 
 A pre-transaction fraud shield for UPI users. RakshaPay is a companion layer that sits
 beside existing UPI apps (Google Pay, PhonePe, BHIM, Paytm) and scores the fraud risk of a
-QR scan, collect request, or payment SMS **before** the user enters their UPI PIN.
+QR scan, a UPI ID, or a payment SMS **before** the user enters their UPI PIN.
 
 It does not process payments, hold funds, or replace any UPI app or bank. It only reads
-locally available signals (QR payload, VPA string, SMS/notification text), scores risk
-on-device, and warns the user in their own language.
+locally available signals (QR payload, VPA string, SMS text), scores risk on-device, and
+warns the user in their own language.
 
 ## Repository layout
 
@@ -19,18 +19,19 @@ docs/      Architecture notes and the original hackathon deck extraction
 
 ## Architecture
 
-1. **User Action** — user scans a QR, receives a collect request, or gets a payment SMS
-2. **Input Capture Layer** (Android, on-device) — QR scanner, SMS reader, notification
-   listener. All raw data stays on the device.
+1. **User Action** — user scans a QR, enters a UPI ID to check, or gets a payment SMS
+2. **Input Capture Layer** (Android, on-device) — QR scanner and SMS reader. All raw data
+   stays on the device.
 3. **On-Device AI Risk Engine** — two models run locally:
    - **Risk Scoring Model** (RandomForest → ONNX): structural features of the
      QR payload / VPA string (entropy, known-PSP-suffix check, pre-filled amount, etc.)
-   - **NLP Scam-Text Matcher** (TF-IDF + LogisticRegression): scans SMS/notification
-     text for scam phrasing
+   - **NLP Scam-Text Matcher** (TF-IDF + LogisticRegression): scans SMS text for scam
+     phrasing
    Both are cross-checked against a locally cached copy of the community scam-pattern
    database.
-4. **Risk Score & Alert** — Safe / Caution / High-Risk, with a text + regional-language
-   voice explanation of why.
+4. **Risk Score & Alert** — Safe / Caution / High-Risk, with an on-screen explanation and
+   a spoken alert in English, Hindi, Kannada or Marathi (`en-IN`, `hi-IN`, `kn-IN`,
+   `mr-IN`). On-screen reason text is English only for now.
 5. **User Decision & Feedback Loop** — proceed, cancel, or report. Reports and anonymized
    risk-scoring events sync to the backend.
 6. **Cloud Scam Intelligence Database** (Supabase) — anonymized, community-sourced scam
@@ -123,8 +124,7 @@ lives inside the database — there is no server to deploy, bill, or keep awake.
 
 ## Privacy
 
-Raw QR payloads, SMS bodies, and notification text never leave the device. The only data
-that syncs upward is:
+Raw QR payloads and SMS bodies never leave the device. The only data that syncs upward is:
 
 - **Reports** you explicitly submit — the payee VPA and a reason code, nothing else.
 - **Risk logs** — risk level and score only, no content.

@@ -48,7 +48,7 @@ PhonePe / GPay / BHIM / Paytm
 | Layer | Technology |
 |---|---|
 | Frontend | Flutter (Android) |
-| On-device inference | ONNX Runtime Mobile  |
+| On-device inference | ONNX Runtime Mobile (QR/VPA model); TF-IDF + logistic evaluated directly in Dart (text model) |
 | Risk Scoring Model | XGBoost or Random Forest over structural QR/VPA features, trained offline |
 | NLP Scam-Text Matcher | Keyword + pattern hybrid (TF-IDF/LogReg) — the deck's stated alternative to a full distilled transformer |
 | Text-to-Speech | On-device regional-language TTS (Android TTS engine) |
@@ -69,17 +69,17 @@ PhonePe / GPay / BHIM / Paytm
 
 
 - Platform: **Android only** (SMS/notification access is not available on iOS).
-- Backend: **Supabase** (Postgres + RLS + trigger), live, not localhost-only.
-  - Revised 2026-08-07. The build originally ran on Firebase, but the report-aggregation
-    step was a Cloud Function, and Cloud Functions require Firebase's paid Blaze plan.
-    On the free Spark plan it was never deployed, so `reports` filled up while
-    `scam_patterns` stayed empty and every device synced an empty community database —
-    the community feedback loop did not work at all. On Postgres the same aggregation is
-    an `AFTER INSERT` trigger running inside the database: no separate runtime, no
-    billing plan, nothing to keep awake. The Firebase build is preserved verbatim at
-    `D:\RakshaPay-firebase-backup`.
+- Backend: **Supabase** (Postgres + RLS + trigger), live, not localhost-only. Report
+  aggregation is an `AFTER INSERT` trigger running inside the database, so there is no
+  separate runtime to deploy or keep awake.
 - Scope: full end-to-end MVP — real backend, multi-language voice alerts, scam-pattern/
   report/risk-log collection all functional, not stubbed.
+- **Input capture implemented in this build: QR scanning and SMS.** The notification
+  listener described in the deck's Input Capture Layer above is *not* implemented — there
+  is no `NotificationListenerService` in the Android manifest and no Dart code for it.
+  The deck sections of this document describe the original design; this list is what the
+  code actually does. Restoring it (scoped to UPI app packages only, to read collect
+  requests) is a known open item.
 - Training data — revised 2026-08-06 after review:
   - **Scam-text model**: real backbone. UCI SMS Spam Collection (5,574 human-written
     SMS) + ~1,200 synthetic rows for India/UPI-specific patterns absent from that
@@ -104,9 +104,8 @@ PhonePe / GPay / BHIM / Paytm
 - **Offline-first is enforced in code**: `ScamDatabaseService` resolves
   `Supabase.instance.client` lazily and returns null when the backend is unavailable, so
   a failed init can never prevent the user from scoring a payment. The local cache and
-  the offline report queue are hand-rolled on `SharedPreferences` and never depended on
-  any SDK's built-in persistence, which is why the backend swap did not touch them.
-  Feature
+  the offline report queue are hand-rolled on `SharedPreferences` rather than relying on
+  any SDK's built-in persistence. Feature
   extraction in `qr_risk_analyzer.dart` must stay in lockstep with the `FEATURES` list
   in `ml/src/train_risk_model.py` — `app/test/qr_features_test.dart` guards the order.
 - **Report poisoning**: a reported VPA only becomes an active shared pattern after
@@ -114,8 +113,6 @@ PhonePe / GPay / BHIM / Paytm
   cannot flag a legitimate merchant for every user.
   - The threshold counts **distinct devices**, enforced by a `UNIQUE (vpa, device_hash)`
     constraint on `reports` — the database rejects a second report of the same VPA from
-    the same install. Under the previous Firestore schema the count was raw reports, so
-    three taps from one phone could activate a pattern; the documented guarantee was
-    weaker than it claimed. `device_hash` is a random per-install token from
-    `Random.secure()`, not a hardware or advertising ID, so it groups reports without
-    identifying the user or the handset.
+    the same install, so three taps from one phone count once, not three times.
+    `device_hash` is a random per-install token from `Random.secure()`, not a hardware or
+    advertising ID, so it groups reports without identifying the user or the handset.
