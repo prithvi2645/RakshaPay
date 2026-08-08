@@ -31,7 +31,6 @@ class RiskResultScreen extends StatefulWidget {
 
 class _RiskResultScreenState extends State<RiskResultScreen> {
   final _tts = TtsService();
-  bool _reporting = false;
   bool _reported = false;
 
   @override
@@ -91,38 +90,29 @@ class _RiskResultScreenState extends State<RiskResultScreen> {
     return payload == null ? null : ScamTextMatcher.extractVpa(payload);
   }
 
+  /// Opens the report form, pre-filled with the UPI ID we already know.
+  ///
+  /// Reporting always goes through that one form rather than submitting
+  /// inline. The reason code it collects — fake_qr, kyc_scam, refund_scam and
+  /// so on — is what lands in the shared scam_patterns table that every other
+  /// device reads, so it has to describe the scam. Submitting from here used
+  /// to send the risk *level* instead, which wrote "caution" into the
+  /// community database and told other users nothing.
+  ///
+  /// A missing VPA is normal for SMS alerts; the form simply opens empty so
+  /// the user can supply one, rather than leaving a dead button.
   Future<void> _report() async {
-    final vpa = _reportableVpa;
-
-    // No UPI ID to attach (common for SMS): open the form so the user can
-    // supply it, instead of leaving a dead button.
-    if (vpa == null || vpa.isEmpty) {
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ReportScamScreen(engine: widget.engine),
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReportScamScreen(
+          engine: widget.engine,
+          prefilledVpa: _reportableVpa,
+          onReported: () {
+            if (mounted) setState(() => _reported = true);
+          },
         ),
-      );
-      return;
-    }
-
-    final messenger = ScaffoldMessenger.of(context);
-    setState(() => _reporting = true);
-    final ok = await widget.engine.scamDatabase.reportScam(
-      vpa: vpa,
-      reasonCode: widget.result.level.name,
+      ),
     );
-    if (!mounted) return;
-
-    setState(() {
-      _reporting = false;
-      _reported = true; // queued counts as done from the user's side
-    });
-    messenger.showSnackBar(SnackBar(
-      content: Text(ok
-          ? 'Reported $vpa. Thanks for protecting other users.'
-          : 'Saved. $vpa will be reported once you are back online.'),
-      duration: const Duration(seconds: 4),
-    ));
   }
 
   @override
@@ -460,14 +450,8 @@ class _RiskResultScreenState extends State<RiskResultScreen> {
                         foregroundColor: AppColors.danger,
                         side: const BorderSide(color: AppColors.dangerBorder, width: 1.5),
                       ),
-                      onPressed: (_reporting || _reported) ? null : _report,
-                      icon: _reporting
-                          ? const SizedBox(
-                              width: 15,
-                              height: 15,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Icon(_reported ? Icons.check : Icons.flag_outlined, size: 18),
+                      onPressed: _reported ? null : _report,
+                      icon: Icon(_reported ? Icons.check : Icons.flag_outlined, size: 18),
                       label: Text(_reported ? 'Reported' : 'Report'),
                     ),
                   ),

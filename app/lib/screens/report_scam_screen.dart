@@ -7,7 +7,17 @@ class ReportScamScreen extends StatefulWidget {
   final RiskEngine engine;
   final String? prefilledVpa;
 
-  const ReportScamScreen({super.key, required this.engine, this.prefilledVpa});
+  /// Fired once a report is accepted, so a screen that opened this form (the
+  /// risk result, for instance) can reflect that without popping the user out
+  /// of the confirmation state shown here.
+  final VoidCallback? onReported;
+
+  const ReportScamScreen({
+    super.key,
+    required this.engine,
+    this.prefilledVpa,
+    this.onReported,
+  });
 
   @override
   State<ReportScamScreen> createState() => _ReportScamScreenState();
@@ -49,6 +59,8 @@ class _ReportScamScreenState extends State<ReportScamScreen> {
       _submitting = false;
       _submitted = ok;
     });
+
+    if (ok) widget.onReported?.call();
 
     messenger.showSnackBar(SnackBar(
       content: Text(ok

@@ -1,0 +1,61 @@
+{
+  "folders": [
+    { "path": "app", "name": "app" },
+    { "path": "ml", "name": "ml" },
+    { "path": "backend", "name": "backend" },
+    { "path": "docs", "name": "docs" },
+    { "path": ".", "name": "RakshaPay (root)" }
+  ],
+  "settings": {
+    "dart.flutterSdkPath": "C:\\src\\flutter",
+    "python.defaultInterpreterPath": "${workspaceFolder:ml}\\venv\\Scripts\\python.exe",
+    "python.terminal.activateEnvironment": true,
+
+    // Never exclude .dart_tool — it holds package_config.json, which is how
+    // every `package:` import resolves. Excluding it makes the analyzer report
+    // all package symbols as undefined.
+    "dart.analysisExcludedFolders": ["build", "android/build", "android/.gradle"],
+
+    "files.exclude": {
+      "**/build": true,
+      "**/__pycache__": true,
+      "**/venv": true
+    },
+    "search.exclude": {
+      "**/build": true,
+      "**/__pycache__": true,
+      "**/venv": true,
+      "**/*.lock": true,
+      "ml/data": true
+    },
+    "files.watcherExclude": {
+      "**/build/**": true,
+      "**/.gradle/**": true,
+      "**/venv/**": true
+    },
+    "[dart]": { "editor.formatOnSave": true }
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "RakshaPay — demo (profile)",
+        "type": "dart",
+        "request": "launch",
+        "flutterMode": "profile",
+        "program": "${workspaceFolder:app}/lib/main.dart",
+        "cwd": "${workspaceFolder:app}",
+        "toolArgs": ["--dart-define-from-file=env.json"]
+      },
+      {
+        "name": "RakshaPay — debug",
+        "type": "dart",
+        "request": "launch",
+        "flutterMode": "debug",
+        "program": "${workspaceFolder:app}/lib/main.dart",
+        "cwd": "${workspaceFolder:app}",
+        "toolArgs": ["--dart-define-from-file=env.json"]
+      }
+    ]
+  }
+}
